@@ -1,0 +1,68 @@
+{
+  "name": "@n8n/nodes-smartsuite",
+  "version": "0.1.0",
+  "description": "n8n community node for SmartSuite",
+  "keywords": [
+    "n8n-community-node-package"
+  ],
+  "license": "MIT",
+  "homepage": "",
+  "author": {
+    "name": "Your Name",
+    "email": "your.email@example.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yourusername/n8n-nodes-smartsuite.git"
+  },
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc && gulp build:icons",
+    "dev": "tsc --watch",
+    "format": "prettier nodes credentials --write",
+    "lint": "eslint nodes credentials package.json",
+    "lintfix": "eslint nodes credentials package.json --fix",
+    "prepublishOnly": "npm run build && npm run lint -c .eslintrc.prepublish.js nodes credentials package.json",
+    "test": "jest"
+  },
+  "files": [
+    "dist"
+  ],
+  "n8n": {
+    "n8nNodesApiVersion": 1,
+    "credentials": [
+      "dist/credentials/SmartSuiteApi.credentials.js"
+    ],
+    "nodes": [
+      "dist/nodes/SmartSuite/SmartSuite.node.js"
+    ]
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.6",
+    "@types/jest": "^29.5.14",
+    "@types/node": "^16.11.7",
+    "@types/request-promise-native": "~1.0.15",
+    "@typescript-eslint/eslint-plugin": "~5.45",
+    "@typescript-eslint/parser": "~5.45",
+    "eslint": "~7.32.0",
+    "eslint-config-prettier": "~8.5.0",
+    "eslint-plugin-n8n-nodes-base": "^1.12.0",
+    "eslint-plugin-prettier": "~4.2.1",
+    "gulp": "^4.0.2",
+    "gulp-cli": "^2.3.0",
+    "jest": "^29.7.0",
+    "jest-mock-extended": "^3.0.7",
+    "n8n-core": "^0.125.0",
+    "n8n-workflow": "^0.107.0",
+    "prettier": "~2.7.1",
+    "ts-jest": "^29.1.2",
+    "typescript": "~4.8.4"
+  },
+  "jest": {
+    "preset": "ts-jest",
+    "testEnvironment": "node",
+    "testMatch": [
+      "**/__tests__/**/*.test.ts"
+    ]
+  }
+}
