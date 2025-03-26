@@ -2,8 +2,6 @@
 
 This is an n8n community node for SmartSuite. It allows you to interact with SmartSuite's API to manage records, search data, and perform operations on your SmartSuite solutions.
 
-> **Version Note**: This is version 0.7.3, based on the stable 0.3.1 codebase. It has been updated to restore functionality and fix node recognition issues. Version 0.7.3 includes an important fix for the List operation to use the correct SmartSuite API endpoint.
-
 ## Features
 
 - Get records by ID
