@@ -1,19 +1,25 @@
 {
   "name": "@n8n/nodes-smartsuite",
   "version": "0.1.0",
-  "description": "n8n community node for SmartSuite",
+  "description": "n8n community node for SmartSuite - Interact with SmartSuite's API to manage records, search data, and perform operations on your SmartSuite solutions",
   "keywords": [
-    "n8n-community-node-package"
+    "n8n-community-node-package",
+    "n8n-node-smartsuite",
+    "smartsuite",
+    "api",
+    "records",
+    "workflow",
+    "automation"
   ],
   "license": "MIT",
-  "homepage": "",
+  "homepage": "https://github.com/jacobwoodward/n8n-nodes-smartsuite#readme",
   "author": {
-    "name": "Your Name",
-    "email": "your.email@example.com"
+    "name": "Jacob Woodward",
+    "email": "jacobwoodward@gmail.com"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/yourusername/n8n-nodes-smartsuite.git"
+    "url": "git+https://github.com/jacobwoodward/n8n-nodes-smartsuite.git"
   },
   "main": "index.js",
   "scripts": {
