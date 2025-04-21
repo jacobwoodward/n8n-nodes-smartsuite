@@ -2,7 +2,7 @@
 
 This is an n8n community node for SmartSuite. It allows you to interact with SmartSuite's API to manage records, search data, and perform operations on your SmartSuite solutions.
 
-> **Version Note**: This is version 0.9.2, which includes support for the n8n AI Agent as a tool node.
+> **Version Note**: This is version 0.9.3, which includes enhanced support for the n8n AI Agent as a tool node.
 
 ## Features
 
@@ -40,7 +40,14 @@ Update an existing record's fields with new values.
 
 ### As an AI Agent Tool
 
-This node can be used as a tool with the n8n AI Agent node. When used as a tool, it provides a structured interface for the AI to interact with SmartSuite data.
+This node is designed to work seamlessly with the n8n AI Agent node. When used as a tool, it provides a structured interface for AI to interact with SmartSuite data.
+
+#### Using with AI Agent
+
+1. Add the SmartSuite node to your workflow
+2. Connect it to the "Tools" input of the AI Agent node
+3. Configure your SmartSuite credentials in the node
+4. The AI Agent will automatically recognize the SmartSuite tool and its capabilities
 
 #### Tool Capabilities
 

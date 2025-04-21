@@ -30,12 +30,69 @@ export class SmartSuite implements INodeType {
       },
     ],
     tool: {
+      name: "smartsuite",
+      displayName: "SmartSuite",
       description: "A tool for interacting with SmartSuite's API to manage records and data. It can get, list, search, and update records in SmartSuite tables.",
+      returnType: "json",
+      loadOptions: {},
+      // Properly defining the tool with input parameters following the structure from the docs
+      properties: [
+        {
+          displayName: "Operation",
+          name: "operation",
+          type: "options",
+          options: [
+            {
+              name: "Get Record",
+              value: "get"
+            },
+            {
+              name: "List Records",
+              value: "list"
+            },
+            {
+              name: "Search Records",
+              value: "search"
+            },
+            {
+              name: "Update Record",
+              value: "update"
+            }
+          ],
+          default: "get",
+          required: true,
+        },
+        {
+          displayName: "Solution ID",
+          name: "solutionId",
+          type: "string",
+          description: "The ID of the SmartSuite solution",
+          required: true,
+        },
+        {
+          displayName: "Table ID",
+          name: "tableId",
+          type: "string",
+          description: "The ID of the SmartSuite table",
+          required: true,
+        },
+        {
+          displayName: "Record ID",
+          name: "recordId",
+          type: "string",
+          description: "The ID of the record to get or update",
+          displayOptions: {
+            show: {
+              operation: ["get", "update"]
+            }
+          },
+          required: true,
+        }
+      ],
       examples: [
         {
           description: "Get a record by ID",
           input: {
-            resource: "record",
             operation: "get",
             solutionId: "123",
             tableId: "456",
@@ -45,7 +102,6 @@ export class SmartSuite implements INodeType {
         {
           description: "Search for records matching specific criteria",
           input: {
-            resource: "record",
             operation: "search",
             solutionId: "123",
             tableId: "456",
