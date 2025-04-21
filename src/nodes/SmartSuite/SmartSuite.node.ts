@@ -2,33 +2,87 @@ import {
   IExecuteFunctions,
   INodeExecutionData,
   INodeType,
-  INodeTypeDescription,
   ILoadOptionsFunctions,
-  NodeConnectionType,
 } from "n8n-workflow";
 
 import { smartSuiteApiRequest } from "./GenericFunctions";
+import { ISmartSuiteNodeDescription } from "./types";
 
 export class SmartSuite implements INodeType {
-  description: INodeTypeDescription = {
+  // @ts-ignore
+  description = {
     displayName: "SmartSuite",
     name: "smartsuite",
     icon: "file:SmartSuite.svg",
     group: ["transform"],
     version: 1,
     subtitle: '={{$parameter["operation"] + ": " + $parameter["resource"]}}',
-    description: "Interact with SmartSuite API",
+    description: "Interact with SmartSuite API to manage records, search data, and perform operations on your SmartSuite solutions. This tool allows you to get, list, search, and update records in your SmartSuite tables.",
     defaults: {
       name: "SmartSuite",
     },
-    inputs: [NodeConnectionType.Main],
-    outputs: [NodeConnectionType.Main],
+    inputs: ["main"],
+    outputs: ["main"],
     credentials: [
       {
         name: "smartSuiteApi",
         required: true,
       },
     ],
+    tool: {
+      description: "A tool for interacting with SmartSuite's API to manage records and data. It can get, list, search, and update records in SmartSuite tables.",
+      examples: [
+        {
+          description: "Get a record by ID",
+          input: {
+            resource: "record",
+            operation: "get",
+            solutionId: "123",
+            tableId: "456",
+            recordId: "789"
+          }
+        },
+        {
+          description: "Search for records matching specific criteria",
+          input: {
+            resource: "record",
+            operation: "search",
+            solutionId: "123",
+            tableId: "456",
+            searchOperator: "AND",
+            filters: {
+              filterFields: [
+                {
+                  field: "status",
+                  condition: "equals",
+                  value: "active"
+                }
+              ]
+            }
+          }
+        }
+      ],
+      parameters: {
+        resource: {
+          type: "string",
+          description: "The type of resource to operate on (currently only 'record' is supported)",
+          enum: ["record"]
+        },
+        operation: {
+          type: "string",
+          description: "The operation to perform on the resource",
+          enum: ["get", "list", "search", "update"]
+        },
+        solutionId: {
+          type: "string",
+          description: "The ID of the SmartSuite solution to work with"
+        },
+        tableId: {
+          type: "string",
+          description: "The ID of the table within the solution"
+        }
+      }
+    },
     properties: [
       {
         displayName: "Resource",
@@ -481,11 +535,8 @@ export class SmartSuite implements INodeType {
               []
             ) as Array<{ field: string; condition: string; value: string }>;
 
-            console.log("Filter data:", JSON.stringify(filterData, null, 2));
-
             // Map the filter data to the format expected by the API
             const fields = filterData.map((filter) => {
-              // For empty/not empty conditions, we still need to include an empty string value
               if (
                 filter.condition === "is_empty" ||
                 filter.condition === "is_not_empty"
@@ -514,9 +565,6 @@ export class SmartSuite implements INodeType {
               ...(hydrated ? { hydrated: true } : {}),
             };
 
-            console.log("Search query:", JSON.stringify(searchQuery, null, 2));
-
-            // Ensure we're using POST with the search endpoint and passing the searchQuery as body
             responseData = await smartSuiteApiRequest.call(
               this,
               "POST",
@@ -547,23 +595,52 @@ export class SmartSuite implements INodeType {
           }
         }
 
+        // Format the response for tool usage
         if (Array.isArray(responseData)) {
           returnData.push(
             ...responseData.map((item) => ({
-              json: item,
+              json: {
+                success: true,
+                data: item,
+                operation,
+                resource,
+                tableId,
+              },
             }))
           );
         } else {
           returnData.push({
-            json: responseData,
+            json: {
+              success: true,
+              data: responseData,
+              operation,
+              resource,
+              tableId,
+            },
           });
         }
       } catch (error) {
         if (this.continueOnFail()) {
           if (error instanceof Error) {
-            returnData.push({ json: { error: error.message } });
+            returnData.push({
+              json: {
+                success: false,
+                error: error.message,
+                operation,
+                resource,
+                tableId,
+              },
+            });
           } else {
-            returnData.push({ json: { error: "Unknown error occurred" } });
+            returnData.push({
+              json: {
+                success: false,
+                error: "Unknown error occurred",
+                operation,
+                resource,
+                tableId,
+              },
+            });
           }
           continue;
         }

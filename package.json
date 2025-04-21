@@ -1,6 +1,6 @@
 {
   "name": "@jacobwoodward/n8n-nodes-smartsuite",
-  "version": "0.8.0",
+  "version": "0.9.0",
   "description": "n8n community node for SmartSuite - Interact with SmartSuite's API to manage records, search data, and perform operations on your SmartSuite solutions",
   "keywords": [
     "n8n-community-node-package",
@@ -9,7 +9,8 @@
     "api",
     "records",
     "workflow",
-    "automation"
+    "automation",
+    "ai-tool"
   ],
   "license": "MIT",
   "homepage": "https://github.com/jacobwoodward/n8n-nodes-smartsuite#readme",
@@ -41,7 +42,13 @@
     ],
     "nodes": [
       "dist/nodes/SmartSuite/SmartSuite.node.js"
-    ]
+    ],
+    "nodeTypes": {
+      "smartsuite": {
+        "type": "tool",
+        "description": "A tool for interacting with SmartSuite's API to manage records and data. It can get, list, search, and update records in SmartSuite tables."
+      }
+    }
   },
   "devDependencies": {
     "@types/express": "^4.17.6",

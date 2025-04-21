@@ -2,7 +2,7 @@
 
 This is an n8n community node for SmartSuite. It allows you to interact with SmartSuite's API to manage records, search data, and perform operations on your SmartSuite solutions.
 
-> **Version Note**: This is version 0.7.3, based on the stable 0.3.1 codebase. It has been updated to restore functionality and fix node recognition issues. Version 0.7.3 includes an important fix for the List operation to use the correct SmartSuite API endpoint.
+> **Version Note**: This is version 0.9.0, which includes support for the n8n AI Agent as a tool node.
 
 ## Features
 
@@ -12,10 +12,81 @@ This is an n8n community node for SmartSuite. It allows you to interact with Sma
 - Update records
 - Support for various field types and operators
 - Comprehensive filtering options
+- AI Agent tool integration
 
 ## Installation
 
 Follow the [installation guide](https://docs.n8n.io/integrations/community-nodes/installation/) in the n8n community nodes documentation.
+
+## Usage
+
+### As a Regular Node
+
+#### Get Record
+Retrieve a specific record by its ID.
+
+#### List Records
+Get all records from a selected table.
+
+#### Search Records
+Search records using filters:
+- Select a field to filter on
+- Choose a condition (equals, contains, greater than, etc.)
+- Enter the value to filter by
+- Use AND/OR operators to combine multiple filters
+
+#### Update Record
+Update an existing record's fields with new values.
+
+### As an AI Agent Tool
+
+This node can be used as a tool with the n8n AI Agent node. When used as a tool, it provides a structured interface for the AI to interact with SmartSuite data.
+
+#### Tool Capabilities
+
+1. **Get Records**
+   - Retrieve specific records by ID
+   - Returns structured data with success/error status
+
+2. **List Records**
+   - Get all records from a table
+   - Option to return hydrated records with full field data
+
+3. **Search Records**
+   - Search records using multiple filters
+   - Support for various field types and operators
+   - AND/OR logic for combining filters
+
+4. **Update Records**
+   - Update existing records with new values
+   - Support for updating multiple fields at once
+
+#### Tool Response Format
+
+The tool returns responses in a consistent format:
+
+```json
+{
+  "success": true,
+  "data": {
+    // The actual record data
+  },
+  "operation": "get|list|search|update",
+  "resource": "record",
+  "tableId": "your-table-id"
+}
+```
+
+In case of errors:
+```json
+{
+  "success": false,
+  "error": "Error message",
+  "operation": "get|list|search|update",
+  "resource": "record",
+  "tableId": "your-table-id"
+}
+```
 
 ## Credentials
 
@@ -27,24 +98,6 @@ To use this node, you'll need to set up your SmartSuite API credentials:
 4. In n8n, add your SmartSuite credentials:
    - API Key: Your SmartSuite API key
    - Base URL: https://api.smartsuite.com/v1
-
-## Usage
-
-### Get Record
-Retrieve a specific record by its ID.
-
-### List Records
-Get all records from a selected table.
-
-### Search Records
-Search records using filters:
-- Select a field to filter on
-- Choose a condition (equals, contains, greater than, etc.)
-- Enter the value to filter by
-- Use AND/OR operators to combine multiple filters
-
-### Update Record
-Update an existing record's fields with new values.
 
 ## Security
 
@@ -91,6 +144,7 @@ We will respond to security reports within 48 hours and work to resolve critical
 - [SmartSuite API Documentation](https://docs.smartsuite.com/api)
 - [n8n Community Nodes Documentation](https://docs.n8n.io/integrations/community-nodes/)
 - [n8n Community Forum](https://community.n8n.io/)
+- [n8n AI Agent Documentation](https://docs.n8n.io/ai-agent/)
 
 ## License
 
