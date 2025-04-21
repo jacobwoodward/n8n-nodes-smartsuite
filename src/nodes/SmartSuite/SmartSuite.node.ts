@@ -6,8 +6,8 @@ import {
 } from "n8n-workflow";
 
 import { smartSuiteApiRequest } from "./GenericFunctions";
-import { ISmartSuiteNodeDescription } from "./types";
 
+// Simple node type definition
 export class SmartSuite implements INodeType {
   // @ts-ignore
   description = {
@@ -17,7 +17,7 @@ export class SmartSuite implements INodeType {
     group: ["transform"],
     version: 1,
     subtitle: '={{$parameter["operation"] + ": " + $parameter["resource"]}}',
-    description: "Interact with SmartSuite API to manage records, search data, and perform operations on your SmartSuite solutions. This tool allows you to get, list, search, and update records in your SmartSuite tables.",
+    description: "Interact with SmartSuite API to manage records, search data, and perform operations on your SmartSuite solutions.",
     defaults: {
       name: "SmartSuite",
     },
