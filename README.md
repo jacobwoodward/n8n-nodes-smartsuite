@@ -2,7 +2,7 @@
 
 This is an n8n community node for SmartSuite. It allows you to interact with SmartSuite's API to manage records, search data, and perform operations on your SmartSuite solutions.
 
-> **Version Note**: This is version 0.9.0, which includes support for the n8n AI Agent as a tool node.
+> **Version Note**: This is version 0.9.1, which includes support for the n8n AI Agent as a tool node.
 
 ## Features
 

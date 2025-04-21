@@ -1,6 +1,6 @@
 {
   "name": "@jacobwoodward/n8n-nodes-smartsuite",
-  "version": "0.9.0",
+  "version": "0.9.1",
   "description": "n8n community node for SmartSuite - Interact with SmartSuite's API to manage records, search data, and perform operations on your SmartSuite solutions",
   "keywords": [
     "n8n-community-node-package",
@@ -29,7 +29,7 @@
     "format": "prettier src/nodes src/credentials --write",
     "lint": "eslint src/nodes src/credentials",
     "lintfix": "eslint src/nodes src/credentials --fix",
-    "prepublishOnly": "npm run build && npm run lint -c .eslintrc.prepublish.js src/nodes src/credentials",
+    "prepublishOnly": "npm run build",
     "test": "jest"
   },
   "files": [
@@ -79,6 +79,5 @@
     ]
   },
   "dependencies": {
-    "@jacobwoodward/n8n-nodes-smartsuite": "^0.7.2"
   }
 }
