@@ -32,7 +32,7 @@ export class SmartSuite implements INodeType {
     tool: {
       name: "smartsuite",
       displayName: "SmartSuite",
-      description: "A tool for interacting with SmartSuite's API to manage records and data. It can get, list, search, and update records in SmartSuite tables.",
+      description: "Use SmartSuite to manage and retrieve data from your solutions. You can get, list, search, and update records.",
       returnType: "json",
       loadOptions: {},
       // Properly defining the tool with input parameters following the structure from the docs
@@ -91,53 +91,106 @@ export class SmartSuite implements INodeType {
       ],
       examples: [
         {
-          description: "Get a record by ID",
-          input: {
-            operation: "get",
-            solutionId: "123",
-            tableId: "456",
-            recordId: "789"
+          usage: 'Get a record by ID',
+          example: 'Get record 123456 from the Tasks table in the Project Management solution',
+          parameters: {
+            resource: 'record',
+            operation: 'get',
+            solutionId: '123e4567-e89b-12d3-a456-426614174000',
+            tableId: '123e4567-e89b-12d3-a456-426614174001',
+            recordId: '123456'
           }
         },
         {
-          description: "Search for records matching specific criteria",
-          input: {
-            operation: "search",
-            solutionId: "123",
-            tableId: "456",
-            searchOperator: "AND",
+          usage: 'Search for records',
+          example: 'Find all tasks with status "In Progress" in the Tasks table',
+          parameters: {
+            resource: 'record',
+            operation: 'search',
+            solutionId: '123e4567-e89b-12d3-a456-426614174000',
+            tableId: '123e4567-e89b-12d3-a456-426614174001',
             filters: {
-              filterFields: [
-                {
-                  field: "status",
-                  condition: "equals",
-                  value: "active"
-                }
-              ]
+              status: 'In Progress'
+            }
+          }
+        },
+        {
+          usage: 'List all records',
+          example: 'Get all records from the Contacts table',
+          parameters: {
+            resource: 'record',
+            operation: 'list',
+            solutionId: '123e4567-e89b-12d3-a456-426614174000',
+            tableId: '123e4567-e89b-12d3-a456-426614174001',
+            hydrate: true
+          }
+        },
+        {
+          usage: 'Update a record',
+          example: 'Update the status of task 123456 to "Completed"',
+          parameters: {
+            resource: 'record',
+            operation: 'update',
+            solutionId: '123e4567-e89b-12d3-a456-426614174000',
+            tableId: '123e4567-e89b-12d3-a456-426614174001',
+            recordId: '123456',
+            fields: {
+              status: 'Completed',
+              completedDate: '2023-09-15'
             }
           }
         }
       ],
-      parameters: {
-        resource: {
-          type: "string",
-          description: "The type of resource to operate on (currently only 'record' is supported)",
-          enum: ["record"]
+      parameters: [
+        {
+          name: 'resource',
+          description: 'The SmartSuite resource to work with (currently only "record" is supported)',
+          required: true,
+          type: 'string'
         },
-        operation: {
-          type: "string",
-          description: "The operation to perform on the resource",
-          enum: ["get", "list", "search", "update"]
+        {
+          name: 'operation',
+          description: 'The operation to perform on the resource (get, list, search, update)',
+          required: true,
+          type: 'string'
         },
-        solutionId: {
-          type: "string",
-          description: "The ID of the SmartSuite solution to work with"
+        {
+          name: 'solutionId',
+          description: 'The ID of the SmartSuite solution',
+          required: true,
+          type: 'string'
         },
-        tableId: {
-          type: "string",
-          description: "The ID of the table within the solution"
+        {
+          name: 'tableId',
+          description: 'The ID of the table in the solution',
+          required: true,
+          type: 'string'
+        },
+        {
+          name: 'recordId',
+          description: 'The ID of the record (required for get and update operations)',
+          required: false,
+          type: 'string'
+        },
+        {
+          name: 'hydrate',
+          description: 'Whether to hydrate the returned records with full field data (for list operation)',
+          required: false,
+          type: 'boolean'
+        },
+        {
+          name: 'filters',
+          description: 'The filters to apply when searching for records (for search operation)',
+          required: false,
+          type: 'object'
+        },
+        {
+          name: 'fields',
+          description: 'The field values to update (for update operation)',
+          required: false,
+          type: 'object'
         }
-      }
+      ]
     },
     properties: [
       {
