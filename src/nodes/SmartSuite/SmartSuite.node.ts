@@ -58,6 +58,22 @@ export class SmartSuite implements INodeType {
             {
               name: "Update Record",
               value: "update"
+            },
+            {
+              name: "List Tables",
+              value: "listTables"
+            },
+            {
+              name: "Get Table",
+              value: "getTable"
+            },
+            {
+              name: "Create Table",
+              value: "createTable"
+            },
+            {
+              name: "Create Field",
+              value: "createField"
             }
           ],
           default: "get",
@@ -76,6 +92,11 @@ export class SmartSuite implements INodeType {
           type: "string",
           description: "The ID of the SmartSuite table",
           required: true,
+          displayOptions: {
+            show: {
+              operation: ["get", "list", "search", "update"]
+            }
+          },
         },
         {
           displayName: "Record ID",
@@ -88,180 +109,148 @@ export class SmartSuite implements INodeType {
             }
           },
           required: true,
-        }
-      ],
-      examples: [
-        {
-          usage: 'Get a record by ID',
-          example: 'Get record 123456 from the Tasks table in the Project Management solution',
-          parameters: {
-            resource: 'record',
-            operation: 'get',
-            solutionId: '123e4567-e89b-12d3-a456-426614174000',
-            tableId: '123e4567-e89b-12d3-a456-426614174001',
-            recordId: '123456'
-          }
         },
         {
-          usage: 'Search for records',
-          example: 'Find all tasks with status "In Progress" in the Tasks table',
-          parameters: {
-            resource: 'record',
-            operation: 'search',
-            solutionId: '123e4567-e89b-12d3-a456-426614174000',
-            tableId: '123e4567-e89b-12d3-a456-426614174001',
-            filters: {
-              status: 'In Progress'
+          displayName: "Specific Table ID",
+          name: "specificTableId",
+          type: "string",
+          description: "The ID of the table to operate on",
+          displayOptions: {
+            show: {
+              operation: ["getTable", "createField"]
             }
-          }
-        },
-        {
-          usage: 'List all records',
-          example: 'Get all records from the Contacts table',
-          parameters: {
-            resource: 'record',
-            operation: 'list',
-            solutionId: '123e4567-e89b-12d3-a456-426614174000',
-            tableId: '123e4567-e89b-12d3-a456-426614174001',
-            hydrate: true
-          }
-        },
-        {
-          usage: 'Update a record',
-          example: 'Update the status of task 123456 to "Completed"',
-          parameters: {
-            resource: 'record',
-            operation: 'update',
-            solutionId: '123e4567-e89b-12d3-a456-426614174000',
-            tableId: '123e4567-e89b-12d3-a456-426614174001',
-            recordId: '123456',
-            fields: {
-              status: 'Completed',
-              completedDate: '2023-09-15'
-            }
-          }
-        },
-        {
-          usage: 'List all tables',
-          example: 'List all tables in the Project Management solution',
-          parameters: {
-            resource: 'table',
-            operation: 'list',
-            solutionId: '123e4567-e89b-12d3-a456-426614174000',
-            tableId: '123e4567-e89b-12d3-a456-426614174001'
-          }
-        },
-        {
-          usage: 'Get table details',
-          example: 'Get detailed information about the Tasks table',
-          parameters: {
-            resource: 'table',
-            operation: 'get',
-            solutionId: '123e4567-e89b-12d3-a456-426614174000',
-            tableId: '123e4567-e89b-12d3-a456-426614174001',
-            specificTableId: '123e4567-e89b-12d3-a456-426614174002'
-          }
-        },
-        {
-          usage: 'Create a new table',
-          example: 'Create a new Projects table in the Project Management solution',
-          parameters: {
-            resource: 'table',
-            operation: 'create',
-            solutionId: '123e4567-e89b-12d3-a456-426614174000',
-            tableId: '123e4567-e89b-12d3-a456-426614174001',
-            tableName: 'projects',
-            tableLabel: 'Projects',
-            tableDescription: 'A table to track all company projects',
-            icon: 'project',
-            primaryFieldName: 'Project Name'
-          }
-        }
-      ],
-      parameters: [
-        {
-          name: 'resource',
-          description: 'The SmartSuite resource to work with (currently only "record" is supported)',
+          },
           required: true,
-          type: 'string'
-        },
-        {
-          name: 'operation',
-          description: 'The operation to perform on the resource (get, list, search, update)',
-          required: true,
-          type: 'string'
-        },
-        {
-          name: 'solutionId',
-          description: 'The ID of the SmartSuite solution',
-          required: true,
-          type: 'string'
-        },
-        {
-          name: 'tableId',
-          description: 'The ID of the table in the solution',
-          required: true,
-          type: 'string'
-        },
-        {
-          name: 'recordId',
-          description: 'The ID of the record (required for get and update operations)',
-          required: false,
-          type: 'string'
-        },
-        {
-          name: 'hydrate',
-          description: 'Whether to hydrate the returned records with full field data (for list operation)',
-          required: false,
-          type: 'boolean'
-        },
-        {
-          name: 'filters',
-          description: 'The filters to apply when searching for records (for search operation)',
-          required: false,
-          type: 'object'
-        },
-        {
-          name: 'fields',
-          description: 'The field values to update (for update operation)',
-          required: false,
-          type: 'object'
-        },
-        {
-          name: 'specificTableId',
-          description: 'The ID of the specific table to retrieve (for table get operation)',
-          required: false,
-          type: 'string'
         },
         {
           name: 'tableName',
           description: 'The name of the table to create (for table create operation)',
-          required: false,
+          displayOptions: {
+            show: {
+              operation: ["createTable"]
+            }
+          },
+          required: true,
           type: 'string'
         },
         {
           name: 'tableLabel',
           description: 'The label of the table to create (for table create operation)',
-          required: false,
+          displayOptions: {
+            show: {
+              operation: ["createTable"]
+            }
+          },
+          required: true,
           type: 'string'
         },
         {
           name: 'tableDescription',
           description: 'The description of the table to create (for table create operation)',
+          displayOptions: {
+            show: {
+              operation: ["createTable"]
+            }
+          },
           required: false,
           type: 'string'
         },
         {
           name: 'icon',
           description: 'The icon name for the table (for table create operation)',
+          displayOptions: {
+            show: {
+              operation: ["createTable"]
+            }
+          },
           required: false,
           type: 'string'
         },
         {
           name: 'primaryFieldName',
           description: 'The name of the primary field (for table create operation)',
+          displayOptions: {
+            show: {
+              operation: ["createTable"]
+            }
+          },
           required: false,
           type: 'string'
+        },
+        {
+          name: 'fieldName',
+          description: 'The name of the field to create (for field create operation)',
+          displayOptions: {
+            show: {
+              operation: ["createField"]
+            }
+          },
+          required: true,
+          type: 'string'
+        },
+        {
+          name: 'fieldLabel',
+          description: 'The label of the field to create (for field create operation)',
+          displayOptions: {
+            show: {
+              operation: ["createField"]
+            }
+          },
+          required: true,
+          type: 'string'
+        },
+        {
+          name: 'fieldType',
+          description: 'The type of the field to create (for field create operation)',
+          displayOptions: {
+            show: {
+              operation: ["createField"]
+            }
+          },
+          required: true,
+          type: 'string',
+          enum: [
+            "TEXT", "NUMBER", "BOOLEAN", "DATE", "EMAIL", "URL", "PHONE", 
+            "MULTI_SELECT", "SINGLE_SELECT", "USER", "FILE", "REFERENCE"
+          ]
+        },
+        {
+          name: 'fieldDescription',
+          description: 'The description of the field to create (for field create operation)',
+          displayOptions: {
+            show: {
+              operation: ["createField"]
+            }
+          },
+          required: false,
+          type: 'string'
+        },
+        {
+          name: 'selectOptions',
+          description: 'Options for select fields (only for MULTI_SELECT or SINGLE_SELECT field types)',
+          displayOptions: {
+            show: {
+              operation: ["createField"],
+              fieldType: ["MULTI_SELECT", "SINGLE_SELECT"]
+            }
+          },
+          required: false,
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              label: {
+                type: 'string',
+                description: 'Display name of the option',
+                required: true
+              },
+              color: {
+                type: 'string',
+                description: 'Color for the option (hex code)',
+                required: false
+              }
+            }
+          }
         }
       ]
     },
@@ -617,6 +606,12 @@ export class SmartSuite implements INodeType {
             value: "create",
             description: "Create a new table",
           },
+          {
+            name: "Create Field",
+            value: "createField",
+            description: "Create a new field in a table",
+            action: "Create a new field in a table",
+          },
         ],
         default: "list",
       },
@@ -629,10 +624,10 @@ export class SmartSuite implements INodeType {
         displayOptions: {
           show: {
             resource: ["table"],
-            operation: ["get"],
+            operation: ["get", "createField"],
           },
         },
-        description: "The ID of the table to retrieve",
+        description: "ID of the table to retrieve",
       },
       {
         displayName: "Table Name",
@@ -700,6 +695,153 @@ export class SmartSuite implements INodeType {
           },
         },
         description: "The name of the primary field",
+      },
+      {
+        displayName: "Field Name",
+        name: "fieldName",
+        type: "string",
+        default: "",
+        required: true,
+        displayOptions: {
+          show: {
+            resource: ["table"],
+            operation: ["createField"],
+          },
+        },
+        description: "Name of the field to create",
+      },
+      {
+        displayName: "Field Label",
+        name: "fieldLabel",
+        type: "string",
+        default: "",
+        required: true,
+        displayOptions: {
+          show: {
+            resource: ["table"],
+            operation: ["createField"],
+          },
+        },
+        description: "Label of the field to create",
+      },
+      {
+        displayName: "Field Type",
+        name: "fieldType",
+        type: "options",
+        options: [
+          {
+            name: "Text",
+            value: "TEXT",
+          },
+          {
+            name: "Number",
+            value: "NUMBER",
+          },
+          {
+            name: "Checkbox",
+            value: "BOOLEAN",
+          },
+          {
+            name: "Date",
+            value: "DATE",
+          },
+          {
+            name: "Email",
+            value: "EMAIL",
+          },
+          {
+            name: "URL",
+            value: "URL",
+          },
+          {
+            name: "Phone",
+            value: "PHONE",
+          },
+          {
+            name: "Multi-Select",
+            value: "MULTI_SELECT",
+          },
+          {
+            name: "Single-Select",
+            value: "SINGLE_SELECT",
+          },
+          {
+            name: "User",
+            value: "USER",
+          },
+          {
+            name: "File",
+            value: "FILE",
+          },
+          {
+            name: "Reference",
+            value: "REFERENCE",
+          },
+        ],
+        default: "TEXT",
+        required: true,
+        displayOptions: {
+          show: {
+            resource: ["table"],
+            operation: ["createField"],
+          },
+        },
+        description: "Type of the field to create",
+      },
+      {
+        displayName: "Field Description",
+        name: "fieldDescription",
+        type: "string",
+        default: "",
+        required: false,
+        displayOptions: {
+          show: {
+            resource: ["table"],
+            operation: ["createField"],
+          },
+        },
+        description: "Description of the field",
+      },
+      {
+        displayName: "Select Options",
+        name: "selectOptions",
+        type: "fixedCollection",
+        typeOptions: {
+          multipleValues: true,
+        },
+        default: {},
+        displayOptions: {
+          show: {
+            resource: ["table"],
+            operation: ["createField"],
+            fieldType: ["MULTI_SELECT", "SINGLE_SELECT"],
+          },
+        },
+        options: [
+          {
+            name: "options",
+            displayName: "Options",
+            values: [
+              {
+                displayName: "Label",
+                name: "label",
+                type: "string",
+                default: "",
+                description: "The display name of the option",
+                required: true,
+              },
+              {
+                displayName: "Color",
+                name: "color",
+                type: "string",
+                default: "#3399ff",
+                description: "The color for the option (hex code)",
+                required: false,
+              },
+            ],
+          },
+        ],
+        description: "Options for the select field",
       },
     ],
   };
@@ -925,6 +1067,41 @@ export class SmartSuite implements INodeType {
               "POST",
               `/applications/`,
               tableData
+            );
+          } else if (operation === "createField") {
+            const tableId = this.getNodeParameter("specificTableId", i) as string;
+            const fieldData = {
+              name: this.getNodeParameter("fieldName", i) as string,
+              label: this.getNodeParameter("fieldLabel", i) as string,
+              field_type: this.getNodeParameter("fieldType", i) as string,
+              description: this.getNodeParameter("fieldDescription", i, "") as string,
+            };
+            
+            // For select fields, we need to add options
+            if (fieldData.field_type === "MULTI_SELECT" || fieldData.field_type === "SINGLE_SELECT") {
+              const selectOptionsData = this.getNodeParameter("selectOptions.options", i, []) as Array<{label: string, color: string}>;
+              if (selectOptionsData && selectOptionsData.length > 0) {
+                (fieldData as any).options = selectOptionsData;
+              }
+            }
+            
+            // First, get the current table structure
+            const table = await smartSuiteApiRequest.call(
+              this,
+              "GET",
+              `/applications/${tableId}`
+            );
+            
+            // Add the new field to the structure
+            const structure = Array.isArray(table.structure) ? [...table.structure] : [];
+            structure.push(fieldData);
+            
+            // Update the table with the new structure
+            responseData = await smartSuiteApiRequest.call(
+              this,
+              "PATCH",
+              `/applications/${tableId}`,
+              { structure }
             );
           }
         }
