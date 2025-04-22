@@ -915,6 +915,7 @@ export class SmartSuite implements INodeType {
               description: this.getNodeParameter("tableDescription", i) as string || undefined,
               icon: this.getNodeParameter("icon", i) as string || undefined,
               solution: solutionId,
+              structure: [],
               primary_field: {
                 name: this.getNodeParameter("primaryFieldName", i) as string || "Title",
               },
