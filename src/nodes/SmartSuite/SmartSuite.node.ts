@@ -21,6 +21,7 @@ export class SmartSuite implements INodeType {
     defaults: {
       name: "SmartSuite",
     },
+    usableAsTool: true,
     inputs: ["main"],
     outputs: ["main"],
     credentials: [
