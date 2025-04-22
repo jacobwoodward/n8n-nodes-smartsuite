@@ -899,7 +899,7 @@ export class SmartSuite implements INodeType {
             responseData = await smartSuiteApiRequest.call(
               this,
               "GET",
-              `/solutions/${solutionId}/applications`
+              `/applications/?solution=${solutionId}`
             );
           } else if (operation === "get") {
             const specificTableId = this.getNodeParameter("specificTableId", i) as string;
