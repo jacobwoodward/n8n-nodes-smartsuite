@@ -121,7 +121,6 @@ export class SmartSuite implements INodeType {
           description: "The field values for the new record (for record create operation)",
           displayOptions: {
             show: {
-              resource: ["record"],
               operation: ["create"]
             }
           },
@@ -387,30 +386,46 @@ export class SmartSuite implements INodeType {
       {
         displayName: "Field Values",
         name: "fieldValues",
-        type: "array",
-        description: "The field values for the new record (for record create operation)",
+        type: "fixedCollection",
+        typeOptions: {
+          multipleValues: true,
+          loadOptionsMethod: "getTableFields",
+          loadOptionsDependsOn: ["tableId"],
+        },
+        default: {},
         displayOptions: {
           show: {
             resource: ["record"],
-            operation: ["create"]
-          }
+            operation: ["create"],
+          },
         },
-        required: true,
-        items: {
-          type: "object",
-          properties: {
-            field: {
-              type: "string",
-              description: "Name of the field",
-              required: true
-            },
-            value: {
-              type: "string", 
-              description: "Value for the field",
-              required: true
-            }
-          }
-        }
+        options: [
+          {
+            name: "fieldValues",
+            displayName: "Field Values",
+            values: [
+              {
+                displayName: "Field",
+                name: "field",
+                type: "options",
+                typeOptions: {
+                  loadOptionsMethod: "getTableFields",
+                  loadOptionsDependsOn: ["tableId"],
+                },
+                default: "",
+                description: "Select a field to set",
+              },
+              {
+                displayName: "Value",
+                name: "value",
+                type: "string",
+                default: "",
+                description: "Enter the value for the field",
+              },
+            ],
+          },
+        ],
+        description: "Fields to set for the new record",
       },
       {
         displayName: "Hydrated",
@@ -645,50 +660,6 @@ export class SmartSuite implements INodeType {
             ],
           },
         ],
-      },
-      {
-        displayName: "Record Fields",
-        name: "createFields",
-        type: "fixedCollection",
-        typeOptions: {
-          multipleValues: true,
-          loadOptionsMethod: "getTableFields",
-          loadOptionsDependsOn: ["tableId"],
-        },
-        default: {},
-        displayOptions: {
-          show: {
-            resource: ["record"],
-            operation: ["create"],
-          },
-        },
-        options: [
-          {
-            name: "fieldValues",
-            displayName: "Field Values",
-            values: [
-              {
-                displayName: "Field",
-                name: "field",
-                type: "options",
-                typeOptions: {
-                  loadOptionsMethod: "getTableFields",
-                  loadOptionsDependsOn: ["tableId"],
-                },
-                default: "",
-                description: "Select a field to set",
-              },
-              {
-                displayName: "Value",
-                name: "value",
-                type: "string",
-                default: "",
-                description: "Enter the value for the field",
-              },
-            ],
-          },
-        ],
-        description: "Fields to set for the new record",
       },
       {
         displayName: "Operation",
@@ -1126,7 +1097,7 @@ export class SmartSuite implements INodeType {
             );
           } else if (operation === "create") {
             const fields = this.getNodeParameter(
-              "fieldValues",
+              "fieldValues.fieldValues",
               i,
               []
             ) as Array<{ field: string; value: string }>;
