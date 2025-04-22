@@ -33,7 +33,7 @@ export class SmartSuite implements INodeType {
     tool: {
       name: "smartsuite",
       displayName: "SmartSuite",
-      description: "Use SmartSuite to manage and retrieve data from your solutions. You can get, list, search, and update records.",
+      description: "Use SmartSuite to manage and retrieve data from your solutions. You can get, list, search, and update records as well as manage tables.",
       returnType: "json",
       loadOptions: {},
       // Properly defining the tool with input parameters following the structure from the docs
@@ -140,6 +140,42 @@ export class SmartSuite implements INodeType {
               completedDate: '2023-09-15'
             }
           }
+        },
+        {
+          usage: 'List all tables',
+          example: 'List all tables in the Project Management solution',
+          parameters: {
+            resource: 'table',
+            operation: 'list',
+            solutionId: '123e4567-e89b-12d3-a456-426614174000',
+            tableId: '123e4567-e89b-12d3-a456-426614174001'
+          }
+        },
+        {
+          usage: 'Get table details',
+          example: 'Get detailed information about the Tasks table',
+          parameters: {
+            resource: 'table',
+            operation: 'get',
+            solutionId: '123e4567-e89b-12d3-a456-426614174000',
+            tableId: '123e4567-e89b-12d3-a456-426614174001',
+            specificTableId: '123e4567-e89b-12d3-a456-426614174002'
+          }
+        },
+        {
+          usage: 'Create a new table',
+          example: 'Create a new Projects table in the Project Management solution',
+          parameters: {
+            resource: 'table',
+            operation: 'create',
+            solutionId: '123e4567-e89b-12d3-a456-426614174000',
+            tableId: '123e4567-e89b-12d3-a456-426614174001',
+            tableName: 'projects',
+            tableLabel: 'Projects',
+            tableDescription: 'A table to track all company projects',
+            icon: 'project',
+            primaryFieldName: 'Project Name'
+          }
         }
       ],
       parameters: [
@@ -190,6 +226,42 @@ export class SmartSuite implements INodeType {
           description: 'The field values to update (for update operation)',
           required: false,
           type: 'object'
+        },
+        {
+          name: 'specificTableId',
+          description: 'The ID of the specific table to retrieve (for table get operation)',
+          required: false,
+          type: 'string'
+        },
+        {
+          name: 'tableName',
+          description: 'The name of the table to create (for table create operation)',
+          required: false,
+          type: 'string'
+        },
+        {
+          name: 'tableLabel',
+          description: 'The label of the table to create (for table create operation)',
+          required: false,
+          type: 'string'
+        },
+        {
+          name: 'tableDescription',
+          description: 'The description of the table to create (for table create operation)',
+          required: false,
+          type: 'string'
+        },
+        {
+          name: 'icon',
+          description: 'The icon name for the table (for table create operation)',
+          required: false,
+          type: 'string'
+        },
+        {
+          name: 'primaryFieldName',
+          description: 'The name of the primary field (for table create operation)',
+          required: false,
+          type: 'string'
         }
       ]
     },
@@ -202,6 +274,10 @@ export class SmartSuite implements INodeType {
           {
             name: "Record",
             value: "record",
+          },
+          {
+            name: "Table",
+            value: "table",
           },
         ],
         default: "record",
@@ -228,6 +304,11 @@ export class SmartSuite implements INodeType {
         },
         default: "",
         required: true,
+        displayOptions: {
+          show: {
+            resource: ["record"],
+          },
+        },
         description: "Select a Table from the Solution",
       },
       {
@@ -511,6 +592,115 @@ export class SmartSuite implements INodeType {
           },
         ],
       },
+      {
+        displayName: "Operation",
+        name: "operation",
+        type: "options",
+        displayOptions: {
+          show: {
+            resource: ["table"],
+          },
+        },
+        options: [
+          {
+            name: "List",
+            value: "list",
+            description: "List all tables in a solution",
+          },
+          {
+            name: "Get",
+            value: "get",
+            description: "Get a table by ID",
+          },
+          {
+            name: "Create",
+            value: "create",
+            description: "Create a new table",
+          },
+        ],
+        default: "list",
+      },
+      {
+        displayName: "Table ID",
+        name: "specificTableId",
+        type: "string",
+        default: "",
+        required: true,
+        displayOptions: {
+          show: {
+            resource: ["table"],
+            operation: ["get"],
+          },
+        },
+        description: "The ID of the table to retrieve",
+      },
+      {
+        displayName: "Table Name",
+        name: "tableName",
+        type: "string",
+        default: "",
+        required: true,
+        displayOptions: {
+          show: {
+            resource: ["table"],
+            operation: ["create"],
+          },
+        },
+        description: "The name of the table to create",
+      },
+      {
+        displayName: "Table Label",
+        name: "tableLabel",
+        type: "string",
+        default: "",
+        required: true,
+        displayOptions: {
+          show: {
+            resource: ["table"],
+            operation: ["create"],
+          },
+        },
+        description: "The label of the table to create",
+      },
+      {
+        displayName: "Table Description",
+        name: "tableDescription",
+        type: "string",
+        default: "",
+        displayOptions: {
+          show: {
+            resource: ["table"],
+            operation: ["create"],
+          },
+        },
+        description: "The description of the table to create",
+      },
+      {
+        displayName: "Icon",
+        name: "icon",
+        type: "string",
+        default: "table",
+        displayOptions: {
+          show: {
+            resource: ["table"],
+            operation: ["create"],
+          },
+        },
+        description: "The icon name for the table",
+      },
+      {
+        displayName: "Primary Field Name",
+        name: "primaryFieldName",
+        type: "string",
+        default: "Title",
+        displayOptions: {
+          show: {
+            resource: ["table"],
+            operation: ["create"],
+          },
+        },
+        description: "The name of the primary field",
+      },
     ],
   };
 
@@ -610,7 +800,8 @@ export class SmartSuite implements INodeType {
     const returnData: INodeExecutionData[] = [];
     const resource = this.getNodeParameter("resource", 0) as string;
     const operation = this.getNodeParameter("operation", 0) as string;
-    const tableId = this.getNodeParameter("tableId", 0) as string;
+    const solutionId = this.getNodeParameter("solutionId", 0) as string;
+    const tableId = resource === "record" ? this.getNodeParameter("tableId", 0) as string : "";
 
     let responseData;
 
@@ -703,6 +894,38 @@ export class SmartSuite implements INodeType {
               updateData
             );
           }
+        } else if (resource === "table") {
+          if (operation === "list") {
+            responseData = await smartSuiteApiRequest.call(
+              this,
+              "GET",
+              `/solutions/${solutionId}/applications`
+            );
+          } else if (operation === "get") {
+            const specificTableId = this.getNodeParameter("specificTableId", i) as string;
+            responseData = await smartSuiteApiRequest.call(
+              this,
+              "GET",
+              `/applications/${specificTableId}`
+            );
+          } else if (operation === "create") {
+            const tableData = {
+              name: this.getNodeParameter("tableName", i) as string,
+              label: this.getNodeParameter("tableLabel", i) as string,
+              description: this.getNodeParameter("tableDescription", i) as string || undefined,
+              icon: this.getNodeParameter("icon", i) as string || undefined,
+              solution: solutionId,
+              primary_field: {
+                name: this.getNodeParameter("primaryFieldName", i) as string || "Title",
+              },
+            };
+            responseData = await smartSuiteApiRequest.call(
+              this,
+              "POST",
+              `/applications/`,
+              tableData
+            );
+          }
         }
 
         // Format the response for tool usage
@@ -714,7 +937,8 @@ export class SmartSuite implements INodeType {
                 data: item,
                 operation,
                 resource,
-                tableId,
+                solutionId,
+                ...(resource === "record" ? { tableId } : {}),
               },
             }))
           );
@@ -725,7 +949,8 @@ export class SmartSuite implements INodeType {
               data: responseData,
               operation,
               resource,
-              tableId,
+              solutionId,
+              ...(resource === "record" ? { tableId } : {}),
             },
           });
         }
@@ -738,7 +963,8 @@ export class SmartSuite implements INodeType {
                 error: error.message,
                 operation,
                 resource,
-                tableId,
+                solutionId,
+                ...(resource === "record" ? { tableId } : {}),
               },
             });
           } else {
@@ -748,7 +974,8 @@ export class SmartSuite implements INodeType {
                 error: "Unknown error occurred",
                 operation,
                 resource,
-                tableId,
+                solutionId,
+                ...(resource === "record" ? { tableId } : {}),
               },
             });
           }
