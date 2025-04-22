@@ -60,6 +60,10 @@ export class SmartSuite implements INodeType {
               value: "update"
             },
             {
+              name: "Create Record",
+              value: "create"
+            },
+            {
               name: "List Tables",
               value: "listTables"
             },
@@ -109,6 +113,34 @@ export class SmartSuite implements INodeType {
             }
           },
           required: true,
+        },
+        {
+          displayName: "Field Values",
+          name: "fieldValues",
+          type: "array",
+          description: "The field values for the new record (for record create operation)",
+          displayOptions: {
+            show: {
+              resource: ["record"],
+              operation: ["create"]
+            }
+          },
+          required: true,
+          items: {
+            type: "object",
+            properties: {
+              field: {
+                type: "string",
+                description: "Name of the field",
+                required: true
+              },
+              value: {
+                type: "string", 
+                description: "Value for the field",
+                required: true
+              }
+            }
+          }
         },
         {
           displayName: "Specific Table ID",
@@ -326,6 +358,11 @@ export class SmartSuite implements INodeType {
             description: "Search records with filters",
           },
           {
+            name: "Create",
+            value: "create",
+            description: "Create a new record",
+          },
+          {
             name: "Update",
             value: "update",
             description: "Update a record",
@@ -346,6 +383,34 @@ export class SmartSuite implements INodeType {
           },
         },
         description: "The ID of the record to retrieve or update",
+      },
+      {
+        displayName: "Field Values",
+        name: "fieldValues",
+        type: "array",
+        description: "The field values for the new record (for record create operation)",
+        displayOptions: {
+          show: {
+            resource: ["record"],
+            operation: ["create"]
+          }
+        },
+        required: true,
+        items: {
+          type: "object",
+          properties: {
+            field: {
+              type: "string",
+              description: "Name of the field",
+              required: true
+            },
+            value: {
+              type: "string", 
+              description: "Value for the field",
+              required: true
+            }
+          }
+        }
       },
       {
         displayName: "Hydrated",
@@ -580,6 +645,50 @@ export class SmartSuite implements INodeType {
             ],
           },
         ],
+      },
+      {
+        displayName: "Record Fields",
+        name: "createFields",
+        type: "fixedCollection",
+        typeOptions: {
+          multipleValues: true,
+          loadOptionsMethod: "getTableFields",
+          loadOptionsDependsOn: ["tableId"],
+        },
+        default: {},
+        displayOptions: {
+          show: {
+            resource: ["record"],
+            operation: ["create"],
+          },
+        },
+        options: [
+          {
+            name: "fieldValues",
+            displayName: "Field Values",
+            values: [
+              {
+                displayName: "Field",
+                name: "field",
+                type: "options",
+                typeOptions: {
+                  loadOptionsMethod: "getTableFields",
+                  loadOptionsDependsOn: ["tableId"],
+                },
+                default: "",
+                description: "Select a field to set",
+              },
+              {
+                displayName: "Value",
+                name: "value",
+                type: "string",
+                default: "",
+                description: "Enter the value for the field",
+              },
+            ],
+          },
+        ],
+        description: "Fields to set for the new record",
       },
       {
         displayName: "Operation",
@@ -1014,6 +1123,25 @@ export class SmartSuite implements INodeType {
               `/applications/${tableId}/records/list/`,
               searchQuery,
               {} // Empty query parameters
+            );
+          } else if (operation === "create") {
+            const fields = this.getNodeParameter(
+              "fieldValues",
+              i,
+              []
+            ) as Array<{ field: string; value: string }>;
+
+            // Convert fields array to object
+            const createData = fields.reduce((acc, { field, value }) => {
+              acc[field] = value;
+              return acc;
+            }, {} as Record<string, string>);
+
+            responseData = await smartSuiteApiRequest.call(
+              this,
+              "POST",
+              `/applications/${tableId}/records/`,
+              createData
             );
           } else if (operation === "update") {
             const recordId = this.getNodeParameter("recordId", i) as string;
