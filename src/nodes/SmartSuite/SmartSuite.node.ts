@@ -1015,40 +1015,38 @@ export class SmartSuite implements INodeType {
             return [];
           }
 
-          const fields = response.structure.map((field: any) => {
-            console.log("Processing field:", field);
-            // Handle the DATE type fields more specifically
-            if (field.field_type === "DATE" && field.slug === "due_date") {
-              // Return multiple entries for start date and due date
-              return [
-                {
-                  name: "Start Date",
-                  value: "start_date",
-                  description: `Type: DATE (from_date)`,
-                },
-                {
-                  name: "Due Date",
-                  value: "due_date",
-                  description: `Type: DATE (to_date)`,
-                }
-              ];
-            }
-            
-            const fieldOption = {
-              name: field.label || field.Label,
-              value: field.slug || field.Slug,
-              description: `Type: ${field.field_type || field.FieldType}`,
-            };
-            console.log("Created field option:", fieldOption);
-            return fieldOption;
-          });
-
-          // Flatten the array in case we returned multiple fields
-          const flatFields = fields.flat();
+          const fields: Array<{ name: string; value: string; description: string }> = [];
           
-          console.log("Final field options:", JSON.stringify(flatFields, null, 2));
+          // Add regular fields
+          for (const field of response.structure) {
+            console.log("Processing field:", field);
+            
+            // Special handling for due_date field - split into start_date and due_date
+            if (field.field_type === "DATE" && field.slug === "due_date") {
+              fields.push({
+                name: "Start Date",  // Display name in the UI
+                value: "start_date", // Internal value used in the code
+                description: `Type: DATE (maps to from_date in the API)`,
+              });
+              
+              fields.push({
+                name: "Due Date",    // Display name in the UI
+                value: "due_date",   // Internal value used in the code
+                description: `Type: DATE (maps to to_date in the API)`,
+              });
+            } else {
+              // Regular field
+              fields.push({
+                name: field.label || field.Label,
+                value: field.slug || field.Slug,
+                description: `Type: ${field.field_type || field.FieldType}`,
+              });
+            }
+          }
+          
+          console.log("Final field options:", JSON.stringify(fields, null, 2));
           console.log("=== END GET TABLE FIELDS ===");
-          return flatFields;
+          return fields;
         } catch (error) {
           console.log("Error getting table fields:", error);
           return [];
@@ -1140,148 +1138,42 @@ export class SmartSuite implements INodeType {
               "fieldValues.fieldValues",
               i,
               []
-            ) as Array<{ 
-              field: string; 
-              value: string;
-            }>;
+            ) as Array<{ field: string; value: string }>;
 
             console.log("Create fields input:", JSON.stringify(fields, null, 2));
 
-            // Convert fields array to object with special handling for date fields
+            // Process fields and build the final data structure
             const createData = {} as Record<string, any>;
+            let startDate: string | undefined = undefined;
+            let dueDate: string | undefined = undefined;
             
-            for (const field of fields) {
-              const { field: fieldName, value } = field;
-              
-              if (fieldName === "start_date") {
-                // Store the start date to be used with due_date
-                if (!createData.due_date) {
-                  createData.due_date = {
-                    from_date: {
-                      date: value,
-                      include_time: true,
-                    },
-                    to_date: {
-                      date: "", // Will be filled later if due_date exists
-                      include_time: true,
-                    },
-                  };
-                } else {
-                  // Update existing due_date object
-                  createData.due_date.from_date = {
-                    date: value,
-                    include_time: true,
-                  };
-                }
-              } else if (fieldName === "due_date") {
-                // Either create a new due_date object or update the existing one
-                if (!createData.due_date) {
-                  createData.due_date = {
-                    from_date: {
-                      date: "", // Will be filled later if start_date exists
-                      include_time: true,
-                    },
-                    to_date: {
-                      date: value,
-                      include_time: true,
-                    },
-                  };
-                } else {
-                  // Update existing due_date object
-                  createData.due_date.to_date = {
-                    date: value,
-                    include_time: true,
-                  };
-                }
+            // First pass - collect all field values including dates
+            for (const { field, value } of fields) {
+              if (field === "start_date") {
+                startDate = value;
+              } else if (field === "due_date") {
+                dueDate = value;
               } else {
                 // Regular field
-                createData[fieldName] = value;
+                createData[field] = value;
               }
             }
             
-            console.log("Create data being sent:", JSON.stringify(createData, null, 2));
-
-            // Handle if this was called as a tool where field values have different structure
-            if (this.getNode().type === 'n8n-nodes-base.smartsuite') {
-              // Check if this is invoked as a tool with simpler input format
-              const toolFields = this.getNodeParameter('fieldValues', i, null) as Array<{ 
-                field: string; 
-                value: string;
-                start_date?: string;
-                end_date?: string;
-                include_start_time?: boolean;
-                include_end_time?: boolean;
-              }> | null;
-              
-              if (toolFields) {
-                console.log("Tool fields:", JSON.stringify(toolFields, null, 2));
-                
-                // Convert tool fields format to the expected API format
-                const toolCreateData = {} as Record<string, any>;
-                
-                for (const field of toolFields) {
-                  const { field: fieldName, value } = field;
-                  
-                  if (fieldName === "start_date") {
-                    if (!toolCreateData.due_date) {
-                      toolCreateData.due_date = {
-                        from_date: {
-                          date: value,
-                          include_time: field.include_start_time ?? true,
-                        },
-                        to_date: {
-                          date: "", // Will be filled later if due_date exists
-                          include_time: true,
-                        },
-                      };
-                    } else {
-                      toolCreateData.due_date.from_date = {
-                        date: value,
-                        include_time: field.include_start_time ?? true,
-                      };
-                    }
-                  } else if (fieldName === "due_date") {
-                    if (!toolCreateData.due_date) {
-                      toolCreateData.due_date = {
-                        from_date: {
-                          date: "", // Will be filled later if start_date exists
-                          include_time: true,
-                        },
-                        to_date: {
-                          date: value,
-                          include_time: field.include_end_time ?? true,
-                        },
-                      };
-                    } else {
-                      toolCreateData.due_date.to_date = {
-                        date: value,
-                        include_time: field.include_end_time ?? true,
-                      };
-                    }
-                  } else {
-                    toolCreateData[fieldName] = value;
-                  }
-                }
-                
-                // Merge the tool data with existing data
-                for (const key in toolCreateData) {
-                  createData[key] = toolCreateData[key];
-                }
-                
-                console.log("Final tool create data:", JSON.stringify(createData, null, 2));
-              }
+            // Only add due_date to createData if at least one date is provided
+            if (startDate || dueDate) {
+              createData.due_date = {
+                from_date: {
+                  date: startDate || "",
+                  include_time: true,
+                },
+                to_date: {
+                  date: dueDate || "",
+                  include_time: true,
+                },
+              };
             }
             
-            // If due_date is present but has empty dates, remove it to avoid API errors
-            if (createData.due_date) {
-              const fromDate = createData.due_date.from_date.date;
-              const toDate = createData.due_date.to_date.date;
-              
-              if (!fromDate && !toDate) {
-                console.log("Both from_date and to_date are empty, removing due_date from request");
-                delete createData.due_date;
-              }
-            }
+            console.log("Final create data:", JSON.stringify(createData, null, 2));
 
             responseData = await smartSuiteApiRequest.call(
               this,
@@ -1295,148 +1187,42 @@ export class SmartSuite implements INodeType {
               "fields.fieldValues",
               i,
               []
-            ) as Array<{ 
-              field: string; 
-              value: string;
-            }>;
+            ) as Array<{ field: string; value: string }>;
             
             console.log("Update fields input:", JSON.stringify(fields, null, 2));
 
-            // Convert fields array to object with special handling for date fields
+            // Process fields and build the final data structure
             const updateData = {} as Record<string, any>;
+            let startDate: string | undefined = undefined;
+            let dueDate: string | undefined = undefined;
             
-            for (const field of fields) {
-              const { field: fieldName, value } = field;
-              
-              if (fieldName === "start_date") {
-                // Store the start date to be used with due_date
-                if (!updateData.due_date) {
-                  updateData.due_date = {
-                    from_date: {
-                      date: value,
-                      include_time: true,
-                    },
-                    to_date: {
-                      date: "", // Will be filled later if due_date exists
-                      include_time: true,
-                    },
-                  };
-                } else {
-                  // Update existing due_date object
-                  updateData.due_date.from_date = {
-                    date: value,
-                    include_time: true,
-                  };
-                }
-              } else if (fieldName === "due_date") {
-                // Either create a new due_date object or update the existing one
-                if (!updateData.due_date) {
-                  updateData.due_date = {
-                    from_date: {
-                      date: "", // Will be filled later if start_date exists
-                      include_time: true,
-                    },
-                    to_date: {
-                      date: value,
-                      include_time: true,
-                    },
-                  };
-                } else {
-                  // Update existing due_date object
-                  updateData.due_date.to_date = {
-                    date: value,
-                    include_time: true,
-                  };
-                }
+            // First pass - collect all field values including dates
+            for (const { field, value } of fields) {
+              if (field === "start_date") {
+                startDate = value;
+              } else if (field === "due_date") {
+                dueDate = value;
               } else {
                 // Regular field
-                updateData[fieldName] = value;
+                updateData[field] = value;
               }
             }
             
-            console.log("Update data being sent:", JSON.stringify(updateData, null, 2));
-
-            // Handle if this was called as a tool where field values have different structure
-            if (this.getNode().type === 'n8n-nodes-base.smartsuite') {
-              // Check if this is invoked as a tool with simpler input format
-              const toolFields = this.getNodeParameter('fieldValues', i, null) as Array<{ 
-                field: string; 
-                value: string;
-                start_date?: string;
-                end_date?: string;
-                include_start_time?: boolean;
-                include_end_time?: boolean;
-              }> | null;
-              
-              if (toolFields) {
-                console.log("Tool fields:", JSON.stringify(toolFields, null, 2));
-                
-                // Convert tool fields format to the expected API format
-                const toolUpdateData = {} as Record<string, any>;
-                
-                for (const field of toolFields) {
-                  const { field: fieldName, value } = field;
-                  
-                  if (fieldName === "start_date") {
-                    if (!toolUpdateData.due_date) {
-                      toolUpdateData.due_date = {
-                        from_date: {
-                          date: value,
-                          include_time: field.include_start_time ?? true,
-                        },
-                        to_date: {
-                          date: "", // Will be filled later if due_date exists
-                          include_time: true,
-                        },
-                      };
-                    } else {
-                      toolUpdateData.due_date.from_date = {
-                        date: value,
-                        include_time: field.include_start_time ?? true,
-                      };
-                    }
-                  } else if (fieldName === "due_date") {
-                    if (!toolUpdateData.due_date) {
-                      toolUpdateData.due_date = {
-                        from_date: {
-                          date: "", // Will be filled later if start_date exists
-                          include_time: true,
-                        },
-                        to_date: {
-                          date: value,
-                          include_time: field.include_end_time ?? true,
-                        },
-                      };
-                    } else {
-                      toolUpdateData.due_date.to_date = {
-                        date: value,
-                        include_time: field.include_end_time ?? true,
-                      };
-                    }
-                  } else {
-                    toolUpdateData[fieldName] = value;
-                  }
-                }
-                
-                // Merge the tool data with existing data
-                for (const key in toolUpdateData) {
-                  updateData[key] = toolUpdateData[key];
-                }
-                
-                console.log("Final tool update data:", JSON.stringify(updateData, null, 2));
-              }
+            // Only add due_date to updateData if at least one date is provided
+            if (startDate || dueDate) {
+              updateData.due_date = {
+                from_date: {
+                  date: startDate || "",
+                  include_time: true,
+                },
+                to_date: {
+                  date: dueDate || "",
+                  include_time: true,
+                },
+              };
             }
             
-            // If due_date is present but has empty dates, remove it to avoid API errors
-            if (updateData.due_date) {
-              const fromDate = updateData.due_date.from_date.date;
-              const toDate = updateData.due_date.to_date.date;
-              
-              if (!fromDate && !toDate) {
-                console.log("Both from_date and to_date are empty, removing due_date from request");
-                delete updateData.due_date;
-              }
-            }
+            console.log("Final update data:", JSON.stringify(updateData, null, 2));
 
             responseData = await smartSuiteApiRequest.call(
               this,
