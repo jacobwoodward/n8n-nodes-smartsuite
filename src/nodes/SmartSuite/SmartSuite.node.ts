@@ -441,59 +441,6 @@ export class SmartSuite implements INodeType {
                 type: "string",
                 default: "",
                 description: "Enter the value for the field",
-                displayOptions: {
-                  hide: {
-                    field: ["due_date"],
-                  },
-                },
-              },
-              {
-                displayName: "Start Date",
-                name: "startDate",
-                type: "dateTime",
-                default: "",
-                description: "Enter the start date and time",
-                displayOptions: {
-                  show: {
-                    field: ["due_date"],
-                  },
-                },
-              },
-              {
-                displayName: "Include Start Time",
-                name: "includeStartTime",
-                type: "boolean",
-                default: true,
-                description: "Whether to include time for the start date",
-                displayOptions: {
-                  show: {
-                    field: ["due_date"],
-                  },
-                },
-              },
-              {
-                displayName: "End Date",
-                name: "endDate",
-                type: "dateTime",
-                default: "",
-                description: "Enter the end date and time",
-                displayOptions: {
-                  show: {
-                    field: ["due_date"],
-                  },
-                },
-              },
-              {
-                displayName: "Include End Time",
-                name: "includeEndTime",
-                type: "boolean",
-                default: true,
-                description: "Whether to include time for the end date",
-                displayOptions: {
-                  show: {
-                    field: ["due_date"],
-                  },
-                },
               },
             ],
           },
@@ -729,59 +676,6 @@ export class SmartSuite implements INodeType {
                 type: "string",
                 default: "",
                 description: "Enter the new value for the field",
-                displayOptions: {
-                  hide: {
-                    field: ["due_date"],
-                  },
-                },
-              },
-              {
-                displayName: "Start Date",
-                name: "startDate",
-                type: "dateTime",
-                default: "",
-                description: "Enter the start date and time",
-                displayOptions: {
-                  show: {
-                    field: ["due_date"],
-                  },
-                },
-              },
-              {
-                displayName: "Include Start Time",
-                name: "includeStartTime",
-                type: "boolean",
-                default: true,
-                description: "Whether to include time for the start date",
-                displayOptions: {
-                  show: {
-                    field: ["due_date"],
-                  },
-                },
-              },
-              {
-                displayName: "End Date",
-                name: "endDate",
-                type: "dateTime",
-                default: "",
-                description: "Enter the end date and time",
-                displayOptions: {
-                  show: {
-                    field: ["due_date"],
-                  },
-                },
-              },
-              {
-                displayName: "Include End Time",
-                name: "includeEndTime",
-                type: "boolean",
-                default: true,
-                description: "Whether to include time for the end date",
-                displayOptions: {
-                  show: {
-                    field: ["due_date"],
-                  },
-                },
               },
             ],
           },
@@ -1249,11 +1143,9 @@ export class SmartSuite implements INodeType {
             ) as Array<{ 
               field: string; 
               value: string;
-              startDate?: string;
-              endDate?: string;
-              includeStartTime?: boolean;
-              includeEndTime?: boolean;
             }>;
+
+            console.log("Create fields input:", JSON.stringify(fields, null, 2));
 
             // Convert fields array to object with special handling for date fields
             const createData = {} as Record<string, any>;
@@ -1306,6 +1198,8 @@ export class SmartSuite implements INodeType {
                 createData[fieldName] = value;
               }
             }
+            
+            console.log("Create data being sent:", JSON.stringify(createData, null, 2));
 
             // Handle if this was called as a tool where field values have different structure
             if (this.getNode().type === 'n8n-nodes-base.smartsuite') {
@@ -1320,6 +1214,8 @@ export class SmartSuite implements INodeType {
               }> | null;
               
               if (toolFields) {
+                console.log("Tool fields:", JSON.stringify(toolFields, null, 2));
+                
                 // Convert tool fields format to the expected API format
                 const toolCreateData = {} as Record<string, any>;
                 
@@ -1371,6 +1267,19 @@ export class SmartSuite implements INodeType {
                 for (const key in toolCreateData) {
                   createData[key] = toolCreateData[key];
                 }
+                
+                console.log("Final tool create data:", JSON.stringify(createData, null, 2));
+              }
+            }
+            
+            // If due_date is present but has empty dates, remove it to avoid API errors
+            if (createData.due_date) {
+              const fromDate = createData.due_date.from_date.date;
+              const toDate = createData.due_date.to_date.date;
+              
+              if (!fromDate && !toDate) {
+                console.log("Both from_date and to_date are empty, removing due_date from request");
+                delete createData.due_date;
               }
             }
 
@@ -1389,11 +1298,9 @@ export class SmartSuite implements INodeType {
             ) as Array<{ 
               field: string; 
               value: string;
-              startDate?: string;
-              endDate?: string;
-              includeStartTime?: boolean;
-              includeEndTime?: boolean;
             }>;
+            
+            console.log("Update fields input:", JSON.stringify(fields, null, 2));
 
             // Convert fields array to object with special handling for date fields
             const updateData = {} as Record<string, any>;
@@ -1446,6 +1353,8 @@ export class SmartSuite implements INodeType {
                 updateData[fieldName] = value;
               }
             }
+            
+            console.log("Update data being sent:", JSON.stringify(updateData, null, 2));
 
             // Handle if this was called as a tool where field values have different structure
             if (this.getNode().type === 'n8n-nodes-base.smartsuite') {
@@ -1460,6 +1369,8 @@ export class SmartSuite implements INodeType {
               }> | null;
               
               if (toolFields) {
+                console.log("Tool fields:", JSON.stringify(toolFields, null, 2));
+                
                 // Convert tool fields format to the expected API format
                 const toolUpdateData = {} as Record<string, any>;
                 
@@ -1511,6 +1422,19 @@ export class SmartSuite implements INodeType {
                 for (const key in toolUpdateData) {
                   updateData[key] = toolUpdateData[key];
                 }
+                
+                console.log("Final tool update data:", JSON.stringify(updateData, null, 2));
+              }
+            }
+            
+            // If due_date is present but has empty dates, remove it to avoid API errors
+            if (updateData.due_date) {
+              const fromDate = updateData.due_date.from_date.date;
+              const toDate = updateData.due_date.to_date.date;
+              
+              if (!fromDate && !toDate) {
+                console.log("Both from_date and to_date are empty, removing due_date from request");
+                delete updateData.due_date;
               }
             }
 
