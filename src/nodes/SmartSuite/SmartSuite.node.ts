@@ -1123,6 +1123,23 @@ export class SmartSuite implements INodeType {
 
           const fields = response.structure.map((field: any) => {
             console.log("Processing field:", field);
+            // Handle the DATE type fields more specifically
+            if (field.field_type === "DATE" && field.slug === "due_date") {
+              // Return multiple entries for start date and due date
+              return [
+                {
+                  name: "Start Date",
+                  value: "start_date",
+                  description: `Type: DATE (from_date)`,
+                },
+                {
+                  name: "Due Date",
+                  value: "due_date",
+                  description: `Type: DATE (to_date)`,
+                }
+              ];
+            }
+            
             const fieldOption = {
               name: field.label || field.Label,
               value: field.slug || field.Slug,
@@ -1132,9 +1149,12 @@ export class SmartSuite implements INodeType {
             return fieldOption;
           });
 
-          console.log("Final field options:", JSON.stringify(fields, null, 2));
+          // Flatten the array in case we returned multiple fields
+          const flatFields = fields.flat();
+          
+          console.log("Final field options:", JSON.stringify(flatFields, null, 2));
           console.log("=== END GET TABLE FIELDS ===");
-          return fields;
+          return flatFields;
         } catch (error) {
           console.log("Error getting table fields:", error);
           return [];
@@ -1235,24 +1255,57 @@ export class SmartSuite implements INodeType {
               includeEndTime?: boolean;
             }>;
 
-            // Convert fields array to object with special handling for due_date
-            const createData = fields.reduce((acc, field) => {
+            // Convert fields array to object with special handling for date fields
+            const createData = {} as Record<string, any>;
+            
+            for (const field of fields) {
               const { field: fieldName, value } = field;
               
-              if (fieldName === "due_date") {
-                // Format due_date with from_date and to_date structure
-                acc[fieldName] = formatDateField(
-                  field.startDate || '',
-                  field.endDate || '',
-                  field.includeStartTime,
-                  field.includeEndTime
-                );
+              if (fieldName === "start_date") {
+                // Store the start date to be used with due_date
+                if (!createData.due_date) {
+                  createData.due_date = {
+                    from_date: {
+                      date: value,
+                      include_time: true,
+                    },
+                    to_date: {
+                      date: "", // Will be filled later if due_date exists
+                      include_time: true,
+                    },
+                  };
+                } else {
+                  // Update existing due_date object
+                  createData.due_date.from_date = {
+                    date: value,
+                    include_time: true,
+                  };
+                }
+              } else if (fieldName === "due_date") {
+                // Either create a new due_date object or update the existing one
+                if (!createData.due_date) {
+                  createData.due_date = {
+                    from_date: {
+                      date: "", // Will be filled later if start_date exists
+                      include_time: true,
+                    },
+                    to_date: {
+                      date: value,
+                      include_time: true,
+                    },
+                  };
+                } else {
+                  // Update existing due_date object
+                  createData.due_date.to_date = {
+                    date: value,
+                    include_time: true,
+                  };
+                }
               } else {
-                acc[fieldName] = value;
+                // Regular field
+                createData[fieldName] = value;
               }
-              
-              return acc;
-            }, {} as Record<string, any>);
+            }
 
             // Handle if this was called as a tool where field values have different structure
             if (this.getNode().type === 'n8n-nodes-base.smartsuite') {
@@ -1268,26 +1321,56 @@ export class SmartSuite implements INodeType {
               
               if (toolFields) {
                 // Convert tool fields format to the expected API format
-                const toolCreateData = toolFields.reduce((acc, field) => {
+                const toolCreateData = {} as Record<string, any>;
+                
+                for (const field of toolFields) {
                   const { field: fieldName, value } = field;
                   
-                  if (fieldName === "due_date" && field.start_date) {
-                    // Format due_date with from_date and to_date structure
-                    acc[fieldName] = formatDateField(
-                      field.start_date,
-                      field.end_date || '',
-                      field.include_start_time,
-                      field.include_end_time
-                    );
+                  if (fieldName === "start_date") {
+                    if (!toolCreateData.due_date) {
+                      toolCreateData.due_date = {
+                        from_date: {
+                          date: value,
+                          include_time: field.include_start_time ?? true,
+                        },
+                        to_date: {
+                          date: "", // Will be filled later if due_date exists
+                          include_time: true,
+                        },
+                      };
+                    } else {
+                      toolCreateData.due_date.from_date = {
+                        date: value,
+                        include_time: field.include_start_time ?? true,
+                      };
+                    }
+                  } else if (fieldName === "due_date") {
+                    if (!toolCreateData.due_date) {
+                      toolCreateData.due_date = {
+                        from_date: {
+                          date: "", // Will be filled later if start_date exists
+                          include_time: true,
+                        },
+                        to_date: {
+                          date: value,
+                          include_time: field.include_end_time ?? true,
+                        },
+                      };
+                    } else {
+                      toolCreateData.due_date.to_date = {
+                        date: value,
+                        include_time: field.include_end_time ?? true,
+                      };
+                    }
                   } else {
-                    acc[fieldName] = value;
+                    toolCreateData[fieldName] = value;
                   }
-                  
-                  return acc;
-                }, {} as Record<string, any>);
+                }
                 
-                // Use the tool data instead
-                Object.assign(createData, toolCreateData);
+                // Merge the tool data with existing data
+                for (const key in toolCreateData) {
+                  createData[key] = toolCreateData[key];
+                }
               }
             }
 
@@ -1312,24 +1395,57 @@ export class SmartSuite implements INodeType {
               includeEndTime?: boolean;
             }>;
 
-            // Convert fields array to object with special handling for due_date
-            const updateData = fields.reduce((acc, field) => {
+            // Convert fields array to object with special handling for date fields
+            const updateData = {} as Record<string, any>;
+            
+            for (const field of fields) {
               const { field: fieldName, value } = field;
               
-              if (fieldName === "due_date") {
-                // Format due_date with from_date and to_date structure
-                acc[fieldName] = formatDateField(
-                  field.startDate || '',
-                  field.endDate || '',
-                  field.includeStartTime,
-                  field.includeEndTime
-                );
+              if (fieldName === "start_date") {
+                // Store the start date to be used with due_date
+                if (!updateData.due_date) {
+                  updateData.due_date = {
+                    from_date: {
+                      date: value,
+                      include_time: true,
+                    },
+                    to_date: {
+                      date: "", // Will be filled later if due_date exists
+                      include_time: true,
+                    },
+                  };
+                } else {
+                  // Update existing due_date object
+                  updateData.due_date.from_date = {
+                    date: value,
+                    include_time: true,
+                  };
+                }
+              } else if (fieldName === "due_date") {
+                // Either create a new due_date object or update the existing one
+                if (!updateData.due_date) {
+                  updateData.due_date = {
+                    from_date: {
+                      date: "", // Will be filled later if start_date exists
+                      include_time: true,
+                    },
+                    to_date: {
+                      date: value,
+                      include_time: true,
+                    },
+                  };
+                } else {
+                  // Update existing due_date object
+                  updateData.due_date.to_date = {
+                    date: value,
+                    include_time: true,
+                  };
+                }
               } else {
-                acc[fieldName] = value;
+                // Regular field
+                updateData[fieldName] = value;
               }
-              
-              return acc;
-            }, {} as Record<string, any>);
+            }
 
             // Handle if this was called as a tool where field values have different structure
             if (this.getNode().type === 'n8n-nodes-base.smartsuite') {
@@ -1345,26 +1461,56 @@ export class SmartSuite implements INodeType {
               
               if (toolFields) {
                 // Convert tool fields format to the expected API format
-                const toolUpdateData = toolFields.reduce((acc, field) => {
+                const toolUpdateData = {} as Record<string, any>;
+                
+                for (const field of toolFields) {
                   const { field: fieldName, value } = field;
                   
-                  if (fieldName === "due_date" && field.start_date) {
-                    // Format due_date with from_date and to_date structure
-                    acc[fieldName] = formatDateField(
-                      field.start_date,
-                      field.end_date || '',
-                      field.include_start_time,
-                      field.include_end_time
-                    );
+                  if (fieldName === "start_date") {
+                    if (!toolUpdateData.due_date) {
+                      toolUpdateData.due_date = {
+                        from_date: {
+                          date: value,
+                          include_time: field.include_start_time ?? true,
+                        },
+                        to_date: {
+                          date: "", // Will be filled later if due_date exists
+                          include_time: true,
+                        },
+                      };
+                    } else {
+                      toolUpdateData.due_date.from_date = {
+                        date: value,
+                        include_time: field.include_start_time ?? true,
+                      };
+                    }
+                  } else if (fieldName === "due_date") {
+                    if (!toolUpdateData.due_date) {
+                      toolUpdateData.due_date = {
+                        from_date: {
+                          date: "", // Will be filled later if start_date exists
+                          include_time: true,
+                        },
+                        to_date: {
+                          date: value,
+                          include_time: field.include_end_time ?? true,
+                        },
+                      };
+                    } else {
+                      toolUpdateData.due_date.to_date = {
+                        date: value,
+                        include_time: field.include_end_time ?? true,
+                      };
+                    }
                   } else {
-                    acc[fieldName] = value;
+                    toolUpdateData[fieldName] = value;
                   }
-                  
-                  return acc;
-                }, {} as Record<string, any>);
+                }
                 
-                // Use the tool data instead
-                Object.assign(updateData, toolUpdateData);
+                // Merge the tool data with existing data
+                for (const key in toolUpdateData) {
+                  updateData[key] = toolUpdateData[key];
+                }
               }
             }
 
