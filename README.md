@@ -2,7 +2,7 @@
 
 This is an n8n community node for SmartSuite. It allows you to interact with SmartSuite's API to manage records, search data, and perform operations on your SmartSuite solutions.
 
-> **Version Note**: This is version 0.9.3, which includes enhanced support for the n8n AI Agent as a tool node.
+> **Version Note**: This is version 0.12.4, which includes enhanced support for the n8n AI Agent as a tool node and improved handling of date fields.
 
 ## Features
 
@@ -13,6 +13,7 @@ This is an n8n community node for SmartSuite. It allows you to interact with Sma
 - Support for various field types and operators
 - Comprehensive filtering options
 - AI Agent tool integration
+- Improved date field handling for due_date fields
 
 ## Installation
 

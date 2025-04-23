@@ -1022,7 +1022,7 @@ export class SmartSuite implements INodeType {
             console.log("Processing field:", field);
             
             // Special handling for due_date field - split into start_date and due_date
-            if (field.field_type === "DATE" && field.slug === "due_date") {
+            if (field.slug === "due_date") {
               fields.push({
                 name: "Start Date",  // Display name in the UI
                 value: "start_date", // Internal value used in the code
