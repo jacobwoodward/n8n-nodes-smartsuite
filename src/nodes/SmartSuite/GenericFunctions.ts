@@ -5,6 +5,32 @@ import {
   IHttpRequestMethods,
 } from "n8n-workflow";
 
+/**
+ * Formats a date field for SmartSuite API
+ * @param startDate The start date as ISO string
+ * @param endDate The end date as ISO string
+ * @param includeStartTime Whether to include time for start date
+ * @param includeEndTime Whether to include time for end date
+ * @returns Formatted date field object for SmartSuite API
+ */
+export function formatDateField(
+  startDate: string,
+  endDate: string,
+  includeStartTime: boolean = true,
+  includeEndTime: boolean = true
+): any {
+  return {
+    from_date: {
+      date: startDate,
+      include_time: includeStartTime,
+    },
+    to_date: {
+      date: endDate,
+      include_time: includeEndTime,
+    },
+  };
+}
+
 export async function smartSuiteApiRequest(
   this: IExecuteFunctions | ILoadOptionsFunctions,
   method: IHttpRequestMethods,

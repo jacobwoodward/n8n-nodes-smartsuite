@@ -5,7 +5,7 @@ import {
   ILoadOptionsFunctions,
 } from "n8n-workflow";
 
-import { smartSuiteApiRequest } from "./GenericFunctions";
+import { smartSuiteApiRequest, formatDateField } from "./GenericFunctions";
 
 // Simple node type definition
 export class SmartSuite implements INodeType {
@@ -137,6 +137,26 @@ export class SmartSuite implements INodeType {
                 type: "string", 
                 description: "Value for the field",
                 required: true
+              },
+              start_date: {
+                type: "string",
+                description: "Start date for due_date field (ISO 8601 format)",
+                required: false
+              },
+              include_start_time: {
+                type: "boolean",
+                description: "Whether to include time for start date",
+                required: false
+              },
+              end_date: {
+                type: "string",
+                description: "End date for due_date field (ISO 8601 format)",
+                required: false
+              },
+              include_end_time: {
+                type: "boolean",
+                description: "Whether to include time for end date",
+                required: false
               }
             }
           }
@@ -421,6 +441,59 @@ export class SmartSuite implements INodeType {
                 type: "string",
                 default: "",
                 description: "Enter the value for the field",
+                displayOptions: {
+                  hide: {
+                    field: ["due_date"],
+                  },
+                },
+              },
+              {
+                displayName: "Start Date",
+                name: "startDate",
+                type: "dateTime",
+                default: "",
+                description: "Enter the start date and time",
+                displayOptions: {
+                  show: {
+                    field: ["due_date"],
+                  },
+                },
+              },
+              {
+                displayName: "Include Start Time",
+                name: "includeStartTime",
+                type: "boolean",
+                default: true,
+                description: "Whether to include time for the start date",
+                displayOptions: {
+                  show: {
+                    field: ["due_date"],
+                  },
+                },
+              },
+              {
+                displayName: "End Date",
+                name: "endDate",
+                type: "dateTime",
+                default: "",
+                description: "Enter the end date and time",
+                displayOptions: {
+                  show: {
+                    field: ["due_date"],
+                  },
+                },
+              },
+              {
+                displayName: "Include End Time",
+                name: "includeEndTime",
+                type: "boolean",
+                default: true,
+                description: "Whether to include time for the end date",
+                displayOptions: {
+                  show: {
+                    field: ["due_date"],
+                  },
+                },
               },
             ],
           },
@@ -656,6 +729,59 @@ export class SmartSuite implements INodeType {
                 type: "string",
                 default: "",
                 description: "Enter the new value for the field",
+                displayOptions: {
+                  hide: {
+                    field: ["due_date"],
+                  },
+                },
+              },
+              {
+                displayName: "Start Date",
+                name: "startDate",
+                type: "dateTime",
+                default: "",
+                description: "Enter the start date and time",
+                displayOptions: {
+                  show: {
+                    field: ["due_date"],
+                  },
+                },
+              },
+              {
+                displayName: "Include Start Time",
+                name: "includeStartTime",
+                type: "boolean",
+                default: true,
+                description: "Whether to include time for the start date",
+                displayOptions: {
+                  show: {
+                    field: ["due_date"],
+                  },
+                },
+              },
+              {
+                displayName: "End Date",
+                name: "endDate",
+                type: "dateTime",
+                default: "",
+                description: "Enter the end date and time",
+                displayOptions: {
+                  show: {
+                    field: ["due_date"],
+                  },
+                },
+              },
+              {
+                displayName: "Include End Time",
+                name: "includeEndTime",
+                type: "boolean",
+                default: true,
+                description: "Whether to include time for the end date",
+                displayOptions: {
+                  show: {
+                    field: ["due_date"],
+                  },
+                },
               },
             ],
           },
@@ -1100,13 +1226,70 @@ export class SmartSuite implements INodeType {
               "fieldValues.fieldValues",
               i,
               []
-            ) as Array<{ field: string; value: string }>;
+            ) as Array<{ 
+              field: string; 
+              value: string;
+              startDate?: string;
+              endDate?: string;
+              includeStartTime?: boolean;
+              includeEndTime?: boolean;
+            }>;
 
-            // Convert fields array to object
-            const createData = fields.reduce((acc, { field, value }) => {
-              acc[field] = value;
+            // Convert fields array to object with special handling for due_date
+            const createData = fields.reduce((acc, field) => {
+              const { field: fieldName, value } = field;
+              
+              if (fieldName === "due_date") {
+                // Format due_date with from_date and to_date structure
+                acc[fieldName] = formatDateField(
+                  field.startDate || '',
+                  field.endDate || '',
+                  field.includeStartTime,
+                  field.includeEndTime
+                );
+              } else {
+                acc[fieldName] = value;
+              }
+              
               return acc;
-            }, {} as Record<string, string>);
+            }, {} as Record<string, any>);
+
+            // Handle if this was called as a tool where field values have different structure
+            if (this.getNode().type === 'n8n-nodes-base.smartsuite') {
+              // Check if this is invoked as a tool with simpler input format
+              const toolFields = this.getNodeParameter('fieldValues', i, null) as Array<{ 
+                field: string; 
+                value: string;
+                start_date?: string;
+                end_date?: string;
+                include_start_time?: boolean;
+                include_end_time?: boolean;
+              }> | null;
+              
+              if (toolFields) {
+                // Convert tool fields format to the expected API format
+                const toolCreateData = toolFields.reduce((acc, field) => {
+                  const { field: fieldName, value } = field;
+                  
+                  if (fieldName === "due_date" && field.start_date) {
+                    // Format due_date with from_date and to_date structure
+                    acc[fieldName] = formatDateField(
+                      field.start_date,
+                      field.end_date || '',
+                      field.include_start_time,
+                      field.include_end_time
+                    );
+                  } else {
+                    acc[fieldName] = value;
+                  }
+                  
+                  return acc;
+                }, {} as Record<string, any>);
+                
+                // Use the tool data instead
+                Object.assign(createData, toolCreateData);
+              }
+            }
 
             responseData = await smartSuiteApiRequest.call(
               this,
@@ -1120,13 +1303,70 @@ export class SmartSuite implements INodeType {
               "fields.fieldValues",
               i,
               []
-            ) as Array<{ field: string; value: string }>;
+            ) as Array<{ 
+              field: string; 
+              value: string;
+              startDate?: string;
+              endDate?: string;
+              includeStartTime?: boolean;
+              includeEndTime?: boolean;
+            }>;
 
-            // Convert fields array to object
-            const updateData = fields.reduce((acc, { field, value }) => {
-              acc[field] = value;
+            // Convert fields array to object with special handling for due_date
+            const updateData = fields.reduce((acc, field) => {
+              const { field: fieldName, value } = field;
+              
+              if (fieldName === "due_date") {
+                // Format due_date with from_date and to_date structure
+                acc[fieldName] = formatDateField(
+                  field.startDate || '',
+                  field.endDate || '',
+                  field.includeStartTime,
+                  field.includeEndTime
+                );
+              } else {
+                acc[fieldName] = value;
+              }
+              
               return acc;
-            }, {} as Record<string, string>);
+            }, {} as Record<string, any>);
+
+            // Handle if this was called as a tool where field values have different structure
+            if (this.getNode().type === 'n8n-nodes-base.smartsuite') {
+              // Check if this is invoked as a tool with simpler input format
+              const toolFields = this.getNodeParameter('fieldValues', i, null) as Array<{ 
+                field: string; 
+                value: string;
+                start_date?: string;
+                end_date?: string;
+                include_start_time?: boolean;
+                include_end_time?: boolean;
+              }> | null;
+              
+              if (toolFields) {
+                // Convert tool fields format to the expected API format
+                const toolUpdateData = toolFields.reduce((acc, field) => {
+                  const { field: fieldName, value } = field;
+                  
+                  if (fieldName === "due_date" && field.start_date) {
+                    // Format due_date with from_date and to_date structure
+                    acc[fieldName] = formatDateField(
+                      field.start_date,
+                      field.end_date || '',
+                      field.include_start_time,
+                      field.include_end_time
+                    );
+                  } else {
+                    acc[fieldName] = value;
+                  }
+                  
+                  return acc;
+                }, {} as Record<string, any>);
+                
+                // Use the tool data instead
+                Object.assign(updateData, toolUpdateData);
+              }
+            }
 
             responseData = await smartSuiteApiRequest.call(
               this,
