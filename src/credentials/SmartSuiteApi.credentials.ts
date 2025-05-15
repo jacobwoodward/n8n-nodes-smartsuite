@@ -9,6 +9,7 @@ export class SmartSuiteApi implements ICredentialType {
       displayName: "API Key",
       name: "apiKey",
       type: "string",
+      typeOptions: { password: true },
       default: "",
       required: true,
       description: "Your SmartSuite API key",
