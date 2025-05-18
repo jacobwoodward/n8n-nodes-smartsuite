@@ -1,6 +1,6 @@
 # n8n-nodes-smartsuite
 
-This is an n8n community node for SmartSuite. It allows you to interact with SmartSuite's API to manage records, search data, and perform operations on your SmartSuite solutions.
+This is an n8n community node for SmartSuite. It allows you to interact with SmartSuite's API to manage records, search data, and perform operations on your SmartSuite solutions. v0.12.5.
 
 ## Features
 

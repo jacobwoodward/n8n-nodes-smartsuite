@@ -1,0 +1,12 @@
+{
+  "serverUrl": "https://mcp-server-wsf5.onrender.com:3000",
+  "apiKey": "YOUR_API_KEY_HERE",
+  "connectionTimeout": 30000,
+  "retryAttempts": 3,
+  "logLevel": "info",
+  "mcpServers": {
+    "smartsuite": {
+      "externalUrl": "https://mcp-server-wsf5.onrender.com:3000"
+    }
+  }
+} 
