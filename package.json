@@ -1,6 +1,6 @@
 {
   "name": "@jacobwoodward/n8n-nodes-smartsuite",
-  "version": "0.12.5",
+  "version": "0.12.7",
   "description": "n8n community node for SmartSuite - Interact with SmartSuite's API to manage records, search data, and perform operations on your SmartSuite solutions",
   "keywords": [
     "n8n-community-node-package",
