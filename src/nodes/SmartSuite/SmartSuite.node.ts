@@ -455,7 +455,7 @@ export class SmartSuite implements INodeType {
         displayOptions: {
           show: {
             resource: ["record"],
-            operation: ["list"],
+            operation: ["get"],
           },
         },
         description: "Whether to return hydrated records with full field data",
@@ -1070,10 +1070,14 @@ export class SmartSuite implements INodeType {
         if (resource === "record") {
           if (operation === "get") {
             const recordId = this.getNodeParameter("recordId", i) as string;
+            const hydrated = this.getNodeParameter("hydrated", i) as boolean;
+            const queryParams = hydrated ? { hydrated: true } : {};
             responseData = await smartSuiteApiRequest.call(
               this,
               "GET",
-              `/applications/${tableId}/records/${recordId}`
+              `/applications/${tableId}/records/${recordId}`,
+              {},
+              queryParams
             );
           } else if (operation === "list") {
             const hydrated = this.getNodeParameter("hydrated", i) as boolean;
