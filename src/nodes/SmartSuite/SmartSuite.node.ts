@@ -504,7 +504,7 @@ export class SmartSuite implements INodeType {
         displayOptions: {
           show: {
             resource: ["record"],
-            operation: ["search"],
+            operation: ["get", "list", "search"],
           },
         },
         description: "Whether to return hydrated records with full field data",
