@@ -455,20 +455,7 @@ export class SmartSuite implements INodeType {
         displayOptions: {
           show: {
             resource: ["record"],
-            operation: ["get"],
-          },
-        },
-        description: "Whether to return hydrated records with full field data",
-      },
-      {
-        displayName: "Hydrated",
-        name: "hydrated",
-        type: "boolean",
-        default: false,
-        displayOptions: {
-          show: {
-            resource: ["record"],
-            operation: ["list"],
+            operation: ["get", "list", "search"],
           },
         },
         description: "Whether to return hydrated records with full field data",
@@ -495,19 +482,6 @@ export class SmartSuite implements INodeType {
           },
         },
         description: "Whether all filters should match (AND) or any (OR)",
-      },
-      {
-        displayName: "Hydrated",
-        name: "hydrated",
-        type: "boolean",
-        default: false,
-        displayOptions: {
-          show: {
-            resource: ["record"],
-            operation: ["get", "list", "search"],
-          },
-        },
-        description: "Whether to return hydrated records with full field data",
       },
       {
         displayName: "Filters",
